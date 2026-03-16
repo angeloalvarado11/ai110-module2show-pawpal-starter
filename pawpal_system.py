@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
+from datetime import date, timedelta
 
 
 @dataclass
@@ -79,6 +80,7 @@ class Task:
 	priority: str
 	frequency: str
 	is_complete: bool = False
+	due_date: date = field(default_factory=date.today)
 
 	VALID_PRIORITIES = ("low", "medium", "high")
 	VALID_FREQUENCIES = ("once", "daily", "weekly")
@@ -108,6 +110,13 @@ class Task:
 		"""Mark this task as completed."""
 		self.is_complete = True
 
+	def next_occurrence(self) -> Task | None:
+		"""Return a new incomplete Task for the next occurrence, or None if frequency is 'once'."""
+		if self.frequency == "once":
+			return None
+		delta = timedelta(days=1) if self.frequency == "daily" else timedelta(weeks=1)
+		return replace(self, is_complete=False, due_date=self.due_date + delta)
+
 
 @dataclass
 class Scheduler:
@@ -129,8 +138,15 @@ class Scheduler:
 			return pet.get_tasks()
 		return self.owner.view_tasks()
 
+	def filter_tasks(self, completed: bool | None = None, pet_name: str | None = None) -> list[Task]:
+		"""Filter tasks by optional completion status and/or pet name."""
+		tasks = self.retrieve_tasks(pet_name)
+		if completed is None:
+			return tasks
+		return [task for task in tasks if task.is_complete == completed]
+
 	def organize_tasks(self) -> list[Task]:
-		"""Return all tasks sorted by priority (high first), then by duration as a tiebreaker."""
+		"""Return all tasks sorted by priority (high first), then by duration."""
 		priority_order = {"high": 0, "medium": 1, "low": 2}
 		return sorted(
 			self.retrieve_tasks(),
@@ -141,10 +157,14 @@ class Scheduler:
 		"""Return the organized list of tasks that have not yet been completed."""
 		return [task for task in self.organize_tasks() if not task.is_complete]
 
-	def manage_task_status(self, task: Task, completed: bool) -> None:
-		"""Mark a task complete or reset it to incomplete based on the completed flag."""
+	def manage_task_status(self, task: Task, completed: bool, pet_name: str | None = None) -> None:
+		"""Mark a task complete or reset it. If completed and recurring, spawns the next occurrence."""
 		if completed:
 			task.mark_complete()
+			if pet_name is not None:
+				next_task = task.next_occurrence()
+				if next_task is not None:
+					self.add_task(pet_name, next_task)
 		else:
 			task.is_complete = False
 
