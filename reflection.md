@@ -4,9 +4,8 @@
 
 **a. Initial design**
 
-- Briefly describe your initial UML design.
-- What classes did you include, and what responsibilities did you assign to each?
-
+    I imagine the system will require four classes to handle the logic. A Pet class (name, breed, age), a Task class (specific action, duration, and possibly priority level?), an Owner class (Name, pet name(s), tasks to be completed), and a Plan class (tasks can be added, total duration, ).
+    I added four classes that will represent the pet, its owner, the tasks they want done, and the plan that is to be followed.
 **b. Design changes**
 
 - Did your design change during implementation?
