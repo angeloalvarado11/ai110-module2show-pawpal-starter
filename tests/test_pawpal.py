@@ -117,3 +117,54 @@ def test_completing_daily_task_spawns_next_occurrence_in_scheduler() -> None:
     assert len(all_tasks) == 2
     new_task = next(t for t in all_tasks if not t.is_complete)
     assert new_task.due_date == date.today() + timedelta(days=1)
+
+
+# --- Failing Scenarios (invalid input should raise ValueError) ---
+
+def test_task_with_empty_action_raises() -> None:
+    with pytest.raises(ValueError):
+        Task(action="", duration_minutes=10, priority="high", frequency="daily")
+
+
+def test_task_with_zero_duration_raises() -> None:
+    with pytest.raises(ValueError):
+        Task(action="Walk", duration_minutes=0, priority="high", frequency="daily")
+
+
+def test_task_with_negative_duration_raises() -> None:
+    with pytest.raises(ValueError):
+        Task(action="Walk", duration_minutes=-5, priority="high", frequency="daily")
+
+
+def test_task_with_invalid_priority_raises() -> None:
+    with pytest.raises(ValueError):
+        Task(action="Walk", duration_minutes=10, priority="urgent", frequency="daily")
+
+
+def test_task_with_invalid_frequency_raises() -> None:
+    with pytest.raises(ValueError):
+        Task(action="Walk", duration_minutes=10, priority="high", frequency="monthly")
+
+
+def test_filter_tasks_with_nonexistent_pet_raises() -> None:
+    owner = Owner(name="Jordan")
+    scheduler = Scheduler(owner=owner)
+    with pytest.raises(ValueError):
+        scheduler.filter_tasks(pet_name="Ghost")
+
+
+def test_add_task_to_nonexistent_pet_raises() -> None:
+    owner = Owner(name="Jordan")
+    scheduler = Scheduler(owner=owner)
+    with pytest.raises(ValueError):
+        scheduler.add_task("Ghost", Task(action="Walk", duration_minutes=20, priority="high", frequency="daily"))
+
+
+def test_pet_with_negative_age_raises() -> None:
+    with pytest.raises(ValueError):
+        Pet(name="Mochi", breed="Shiba Inu", age=-1)
+
+
+def test_owner_with_empty_name_raises() -> None:
+    with pytest.raises(ValueError):
+        Owner(name="")
