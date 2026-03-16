@@ -22,7 +22,7 @@ class Owner:
 	pet_names: list[str] = field(default_factory=list)
 	tasks_to_be_completed: list[Task] = field(default_factory=list)
 
-	def add_pet(self, pet: Pet) -> None:
+	def add_pet(self, pet_name: str) -> None:
 		pass
 
 	def add_task(self, task: Task) -> None:
@@ -49,18 +49,24 @@ class Task:
 
 
 @dataclass
-class Plan:
+class Scheduler:
 	tasks: list[Task] = field(default_factory=list)
-	total_duration: int = 0
+	tasks_by_pet: dict[str, list[Task]] = field(default_factory=dict)
 
-	def add_task(self, task: Task) -> None:
+	def add_task(self, pet_name: str, task: Task) -> None:
 		pass
 
-	def calculate_total_duration(self) -> int:
+	def retrieve_tasks(self, pet_name: str | None = None) -> list[Task]:
+		pass
+
+	def organize_tasks(self) -> list[Task]:
 		pass
 
 	def generate_schedule(self) -> list[Task]:
 		pass
 
-	def explain_plan(self) -> str:
+	def manage_task_status(self, task: Task, completed: bool) -> None:
+		pass
+
+	def explain_schedule(self) -> str:
 		pass
